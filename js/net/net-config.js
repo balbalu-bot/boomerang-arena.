@@ -6,7 +6,7 @@
 
 export const NET = {
   SUPABASE_URL: '',        // https://cdgyyjaudtfumleyktla.supabase.co/rest/v1/
-  SUPABASE_ANON_KEY: '',   // sb_publishable_5Ozy1Q4FCSWoUFoVc96NUg_vCHy7le9
+SUPABASE_ANON_KEY: '',   // sb_publishable_5Ozy1Q4FCSWoUFoVc96NUg_vCHy7le9
   // Server STUN pubblici gratuiti: servono a far trovare tra loro i browser.
   // Se in qualche rete (alcune scuole o operatori mobili) la connessione diretta non riesce,
   // si può aggiungere un server TURN qui sotto (vedi README, sezione TURN).
