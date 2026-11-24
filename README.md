@@ -4,7 +4,7 @@ Party game 3D a visuale isometrica: lancia il boomerang, richiamalo, devia i col
 
 Funziona direttamente nel browser (Chrome, Edge, Firefox, Safari) su Windows, macOS, tablet e smartphone. Nessuna installazione, nessuna pubblicità, nessun dato raccolto.
 
-> **Versione 0.1 — fasi 1-5 della roadmap.** Si gioca in locale sullo stesso dispositivo: tastiera e mouse, fino a 8 controller e bot. Il multiplayer online, la chat vocale e le stanze private arrivano nelle fasi 6-8 (vedi `docs/ARCHITETTURA.md`).
+> **Versione 0.3 — gioco online con stanze private.** Si gioca online (fino a 8 tra persone e bot) oppure sullo stesso dispositivo con tastiera, controller e bot. La chat vocale arriva nella fase 7.
 
 ---
 
@@ -47,6 +47,35 @@ poi apri `http://localhost:8000`.
 
 ---
 
+## Attivare il gioco online (una volta sola, circa 10 minuti)
+
+Il gioco online usa **Supabase** (gratuito) solo per stanze e collegamento iniziale; durante la partita i dati viaggiano direttamente tra i browser.
+
+1. **Crea il progetto Supabase.** Vai su https://supabase.com/dashboard → **New project**. Nome: `boomerang-arena`, scegli una password (conservala, ma NON metterla nel gioco), regione **Central EU (Frankfurt)**. Attendi 1-2 minuti.
+2. **Crea le tabelle.** Nel progetto: **SQL Editor → New query**. Apri il file `supabase/schema.sql`, copia tutto, incolla e premi **Run**. Deve comparire "Success".
+3. **Attiva l'accesso anonimo.** **Authentication → Sign In / Providers** (o *Providers*) → attiva **Allow anonymous sign-ins** → **Save**. Serve perché i ragazzi non devono registrarsi con email.
+4. **Copia le due chiavi pubbliche.** **Project Settings → API** (o *Data API* / *API Keys*): copia **Project URL** e la chiave **anon public** (inizia con `eyJ...`). ⚠️ Non usare mai la chiave `service_role`.
+5. **Inseriscile nel gioco.** Su GitHub apri `js/net/net-config.js` → icona della matita (Edit) → incolla tra gli apici:
+   ```js
+   SUPABASE_URL: 'https://xxxxxxxx.supabase.co',
+   SUPABASE_ANON_KEY: 'eyJ...',
+   ```
+   poi **Commit changes**. Dopo 1-2 minuti il sito si aggiorna.
+6. **(Consigliato) Solo canali privati.** **Realtime → Settings** → disattiva **Allow public access** → **Save**.
+
+### Come si gioca online
+1. **Gioca online** → scrivi un soprannome → **Crea una stanza**.
+2. Premi **Copia link** e mandalo all'altro giocatore (WhatsApp, SMS…). Chi apre il link trova il codice già inserito: scrive il soprannome e preme **Entra nella stanza**.
+3. Ognuno sceglie il personaggio con ◀ ▶ e preme **Pronto!**. **Quando tutti sono pronti la partita parte da sola.** L'host può aggiungere bot e scegliere modalità, round e arena; con **Avvia ora** parte subito.
+4. A fine partita l'host sceglie **Rivincita** o **Torna alla stanza**.
+
+**Da sapere**
+- La partita gira sul dispositivo di chi crea la stanza (l'host): conviene che la crei chi ha il computer più potente e la connessione migliore, e che **non chiuda o rimpicciolisca la scheda** durante la partita. Se l'host esce, la stanza si chiude per tutti.
+- Accanto a ogni giocatore c'è lo stato del collegamento: **● diretta** (ottimo) oppure **◐ indiretta**. "Indiretta" succede in alcune reti (scuole, alcuni operatori mobili): il gioco funziona lo stesso ma meno fluido e consuma i messaggi gratuiti di Supabase. Per risolvere si può aggiungere un server TURN in `js/net/net-config.js` (vedi `docs/ARCHITETTURA.md`).
+- Le stanze scadono dopo 12 ore. Il codice è casuale; l'host può **chiudere la stanza** a nuovi ingressi ed espellere un giocatore con ✕.
+- Un progetto Supabase gratuito che non viene usato per una settimana va in pausa: basta riattivarlo dalla dashboard.
+- Chi entra a partita iniziata la guarda e gioca dalla partita successiva.
+
 ## Comandi
 
 **Tastiera e mouse** — WASD muoversi · mouse mirare · tasto sinistro tieni premuto per caricare e rilascia per lanciare · tasto destro corpo a corpo (o richiamo se l'arma è in volo) · Spazio scatto · ESC pausa. I tasti si cambiano in *Impostazioni*.
@@ -83,7 +112,10 @@ js/game/world.js        simulazione del round (giocatori, boomerang, eliminazion
 js/game/ai.js           intelligenza artificiale dei bot
 js/game/match.js        round, punteggi, eventi, HUD
 js/data/arenas.js       mappe delle arene
-vendor/                 Three.js r170 (licenza MIT) incluso localmente
+js/net/                 gioco online: configurazione, stanze, collegamento WebRTC, sincronizzazione
+js/ui/lobby.js          schermate online e stanza
+supabase/schema.sql     tabelle e sicurezza del database
+vendor/                 Three.js r170 e supabase-js (licenza MIT) inclusi localmente
 docs/ARCHITETTURA.md    architettura e piano delle fasi successive
 ```
 
@@ -101,7 +133,6 @@ Tutte le velocità, i tempi e le distanze sono in `js/core/config.js`.
 ## Requisiti e limiti
 - Serve un browser con WebGL (tutti quelli recenti). Su computer molto vecchi (per esempio con Windows XP) il gioco non parte.
 - Su smartphone conviene la qualità **Bassa** (impostata in automatico sui dispositivi touch).
-- In questa versione non c'è traffico di rete: tutto avviene sul dispositivo.
 
 ## Licenze
 Codice, personaggi, arene, suoni e musica sono originali di questo progetto. Three.js © Three.js authors, licenza MIT (`vendor/THREE-LICENSE.txt`).

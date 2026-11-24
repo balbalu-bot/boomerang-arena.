@@ -23,9 +23,9 @@
 | 3 | Collisioni e arene interattive | ✅ parziale: acqua, lava, ghiaccio, vuoto, casse, barili, cespugli, ponti. Da fare: porte, pulsanti, botole, piattaforme mobili, nastri, teletrasporti, cannoni, zone che sprofondano |
 | 4 | Personaggi e animazioni | ✅ 24 personaggi. Da fare: accessori e colori personalizzabili, abilità individuali (modalità alternativa) |
 | 5 | Intelligenza artificiale | ✅ 4 livelli. Da migliorare: collaborazione di squadra |
-| 6 | Multiplayer online | prossima |
+| 6 | Multiplayer online | ✅ v0.3: stanze private, lobby con presenze, avvio quando tutti sono pronti, host autorevole su WebRTC, relè di riserva, spettatori. Da fare: migrazione dell'host, predizione locale |
 | 7 | Chat vocale permanente | |
-| 8 | Sicurezza e stanze private | da sviluppare insieme alla 6 |
+| 8 | Sicurezza e stanze private | ✅ parziale: RLS, canali privati, codici casuali a scadenza, blocco stanza, espulsione. Da fare: approvazione manuale dei nuovi ingressi, chat testuale |
 | 9 | Armi aggiuntive e potenziamenti combinabili | |
 | 10 | Altre modalità | |
 | 11 | Editor delle mappe | |
@@ -71,3 +71,11 @@ GitHub Pages pubblica solo file statici: non può eseguire un server di gioco. L
 - Particelle: `InstancedMesh`, un draw call per tipo.
 - Qualità **Bassa**: niente ombre, risoluzione 1×, metà particelle. **Media**: ombre 1024, risoluzione fino a 1,5×. **Alta**: ombre 2048, risoluzione fino a 2×.
 - Il passo fisso della simulazione rende il gioco uguale anche su schermi a 30, 60 o 120 Hz.
+
+## 5. Implementazione online (v0.3)
+
+- `js/net/online.js` — `OnlineSession`: accesso anonimo Supabase, `create_room` / `join_room`, canale privato `room:<id>` con Presence (soprannome, personaggio, pronto, impostazioni dell'host), segnalazione WebRTC. L'host apre un `RTCPeerConnection` verso ogni giocatore con due DataChannel: `u` (non affidabile, istantanee) e `r` (affidabile, eventi). Se il collegamento diretto non si apre in 12 s si passa al relè tramite Supabase Broadcast a frequenza ridotta.
+- `js/net/netgame.js` — `NetHost` (sull'host: comandi in ingresso, istantanee a 20 Hz, eventi) e `ClientMatch` (sui client: nessuna simulazione, interpolazione con ~100 ms di ritardo).
+- Perché non tutto su Supabase Realtime: sul piano gratuito ogni messaggio Broadcast conta una volta in invio più una per ogni destinatario, con limiti di 100 messaggi/s e 2 milioni al mese: una partita a 4 a 20 aggiornamenti/s li esaurirebbe in poche ore.
+- Prova locale senza Supabase: aprire due schede con `?locale=1` (stesso browser): segnalazione tramite `BroadcastChannel`.
+- TURN: aggiungere a `ICE_SERVERS` una voce `{ urls: 'turn:…', username: '…', credential: '…' }`. Le credenziali TURN in un sito pubblico sono visibili a tutti: usare solo credenziali temporanee generate da una Supabase Edge Function, oppure un servizio con limiti di consumo.

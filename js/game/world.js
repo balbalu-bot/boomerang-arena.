@@ -60,7 +60,7 @@ class Player {
     world.scene.add(this.rig.root);
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.52, 28).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: this.color, transparent: true, opacity: 0.9 }));
     ring.position.y = 0.02; this.ring = ring; world.scene.add(ring);
-    if (!this.isBot) {
+    if (!this.isBot && cfg.local !== false) {
       // anteprima della traiettoria con i rimbalzi (puntini sul pavimento)
       this.aimGroup = new THREE.Group();
       const dotM = new THREE.MeshBasicMaterial({ color: this.color, transparent: true, opacity: 0.9, depthWrite: false });

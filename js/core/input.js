@@ -24,6 +24,7 @@ export class InputManager {
     this.touch = { enabled: false, move: { id: null, ox: 0, oy: 0, x: 0, y: 0 }, aim: { id: null, ox: 0, oy: 0, x: 0, y: 0 }, dashEdge: false, meleeEdge: false };
     this.lastDevice = 'kb';
     this.keyCapture = null;     // callback per la riassegnazione dei tasti
+    this.remote = new Map();    // comandi dei giocatori online (solo sull'host)
 
     addEventListener('keydown', e => {
       if (this.keyCapture) { e.preventDefault(); const cb = this.keyCapture; this.keyCapture = null; cb(e.code); return; }
@@ -178,6 +179,15 @@ export class InputManager {
   getIntent(deviceId) {
     const it = emptyIntent();
     const K = settings.keys;
+    if (deviceId.startsWith('net:')) {
+      const r = this.remote.get(deviceId);
+      if (r) {
+        it.mx = r.mx || 0; it.mz = r.mz || 0; it.ax = r.ax || 0; it.az = r.az || 0;
+        it.hasAim = !!r.hasAim; it.throwHeld = !!r.throwHeld; it.melee = !!r.melee; it.dash = !!r.dash;
+        r.melee = false; r.dash = false;
+      }
+      return it;
+    }
     if (deviceId === 'kb') {
       const k = c => this.keys.has(c);
       it.mx = (k(K.right) || k('ArrowRight') ? 1 : 0) - (k(K.left) || k('ArrowLeft') ? 1 : 0);

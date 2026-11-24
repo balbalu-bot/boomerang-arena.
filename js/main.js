@@ -12,6 +12,7 @@ import { ARENAS } from './data/arenas.js';
 import { Match } from './game/match.js';
 import { makeThumbnails } from './ui/thumbnails.js';
 import * as Nav from './ui/nav.js';
+import { setupOnline } from './ui/lobby.js';
 
 const $ = s => document.querySelector(s);
 const canvas = $('#game');
@@ -41,6 +42,7 @@ function show(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   if (name === 'setup') renderSlots();
   if (name === 'settings') renderSettings();
+  if (name === 'online') online.onShowOnline();
   setTimeout(Nav.focusFirst, 0);
 }
 document.addEventListener('click', e => {
@@ -174,9 +176,39 @@ function exitMatch() {
   show('menu');
 }
 $('#btn-resume').onclick = () => match?.resume();
-$('#btn-quit').onclick = exitMatch;
+$('#btn-quit').onclick = () => online.active ? online.quit() : exitMatch();
 $('#btn-rematch').onclick = () => match?.rematch();
-$('#btn-menu').onclick = exitMatch;
+$('#btn-menu').onclick = () => online.active ? (online.isHost ? online.toRoom() : online.quit()) : exitMatch();
+
+// ---------------- ONLINE ----------------
+function setOverlayTexts(isOnline) {
+  $('#btn-quit').textContent = isOnline ? t('leaveRoom') : t('quit');
+  $('#btn-menu').textContent = isOnline ? (online.isHost ? t('backToRoom') : t('leaveRoom')) : t('toMenu');
+  $('#btn-rematch').style.display = isOnline && !online.isHost ? 'none' : '';
+}
+const online = setupOnline({
+  view, fx, input, show, unlockAudio,
+  getMatch: () => match,
+  enterGame(factory, isOnline) {
+    demo?.dispose(); demo = null;
+    match?.dispose(); match = null;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    screen = 'game';
+    document.body.classList.add('ingame');
+    input.showTouch(isTouch);
+    input.endFrame();
+    setOverlayTexts(isOnline);
+    match = factory();
+  },
+  leaveGame(toScreen) {
+    match?.dispose(); match = null;
+    document.body.classList.remove('ingame');
+    input.showTouch(false);
+    setOverlayTexts(false);
+    if (!demo) startDemo();
+    show(toScreen);
+  },
+});
 $('#tbtn-pause').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); if (match && match.state !== 'paused') match.pause(); }, { passive: false });
 
 // ---------------- PERSONAGGI ----------------
@@ -280,6 +312,6 @@ function loop(now) {
 applyI18n();
 renderChars();
 startDemo();
-show('menu');
+show(online.inviteCode ? 'online' : 'menu');
 requestAnimationFrame(loop);
 window.__game = { get match() { return match; }, get demo() { return demo; }, view, input, startMatch, slots: () => slots };

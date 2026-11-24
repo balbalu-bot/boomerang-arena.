@@ -31,7 +31,8 @@
         <p data-i18n="subtitle"></p>
       </div>
       <nav class="menu-buttons">
-        <button class="btn big primary" data-go="setup" data-i18n="play"></button>
+        <button class="btn big primary" data-go="online" data-i18n="playOnline"></button>
+        <button class="btn" data-go="setup" data-i18n="playLocal"></button>
         <button class="btn" data-go="chars" data-i18n="characters"></button>
         <button class="btn" data-go="howto" data-i18n="howto"></button>
         <button class="btn" data-go="settings" data-i18n="settings"></button>
@@ -62,6 +63,51 @@
         <div class="row-actions end">
           <button class="btn" data-go="menu" data-i18n="back"></button>
           <button class="btn primary big" id="start-match" data-i18n="start"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- GIOCA ONLINE -->
+    <section id="scr-online" class="screen">
+      <div class="panel">
+        <h2 data-i18n="playOnline"></h2>
+        <div id="online-noconf" class="warnbox" data-i18n-html="noConfig"></div>
+        <div class="opts col" id="online-form">
+          <label><span data-i18n="nickname"></span><input type="text" id="nick" maxlength="16" autocomplete="off" spellcheck="false"></label>
+          <button class="btn primary big" id="btn-create" data-i18n="createRoom"></button>
+          <div class="or" data-i18n="orJoin"></div>
+          <label><span data-i18n="roomCode"></span><input type="text" id="join-code" maxlength="8" autocomplete="off" spellcheck="false" placeholder="ABCD2345"></label>
+          <button class="btn" id="btn-join" data-i18n="joinRoom"></button>
+        </div>
+        <div id="online-msg" class="msg"></div>
+        <p class="hint" data-i18n="safetyNote"></p>
+        <div class="row-actions end"><button class="btn" data-go="menu" data-i18n="back"></button></div>
+      </div>
+    </section>
+
+    <!-- STANZA (LOBBY) -->
+    <section id="scr-room" class="screen">
+      <div class="panel wide">
+        <h2><span data-i18n="room"></span> <span id="room-code" class="code"></span></h2>
+        <div class="invite">
+          <input type="text" id="room-link" readonly>
+          <button class="btn small" id="btn-copy" data-i18n="copyLink"></button>
+        </div>
+        <div class="slots" id="room-members"></div>
+        <div class="opts" id="room-opts">
+          <label><span data-i18n="mode"></span><select id="ro-mode"><option value="classic" data-i18n="modeClassic"></option><option value="teams" data-i18n="modeTeams"></option></select></label>
+          <label><span data-i18n="roundsToWin"></span><select id="ro-rounds"><option>3</option><option selected>5</option><option>7</option></select></label>
+          <label><span data-i18n="bots"></span><select id="ro-bots"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label><span data-i18n="botLevel"></span><select id="ro-level"><option value="facile" data-i18n="facile"></option><option value="normale" data-i18n="normale"></option><option value="difficile" data-i18n="difficile"></option><option value="esperto" data-i18n="esperto"></option></select></label>
+          <label><span data-i18n="arena"></span><select id="ro-arena"></select></label>
+          <label class="check"><input type="checkbox" id="ro-lock"><span data-i18n="lockRoom"></span></label>
+        </div>
+        <div id="room-summary" class="hint"></div>
+        <div id="room-status" class="status"></div>
+        <div class="row-actions end">
+          <button class="btn" id="btn-leave" data-i18n="leaveRoom"></button>
+          <button class="btn" id="btn-force" data-i18n="startNow"></button>
+          <button class="btn primary big" id="btn-ready" data-i18n="imReady"></button>
         </div>
       </div>
     </section>

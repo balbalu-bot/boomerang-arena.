@@ -13,7 +13,8 @@ import { CHAR_BY_ID } from './characters.js';
 const STEP = 1 / CFG.SIM_HZ;
 
 export class Match {
-  constructor({ view, fx, input, config, demo = false, onExit }) {
+  constructor({ view, fx, input, config, demo = false, onExit, net = null }) {
+    this.net = net;          // NetHost quando questa partita è ospitata online
     this.view = view; this.fx = fx; this.input = input; this.cfg = config; this.demo = demo; this.onExit = onExit;
     this.wins = new Map();
     this.round = 0;
@@ -58,6 +59,7 @@ export class Match {
     this.endDelay = 0;
     this.lastBeep = -1;
     this.view.frame(this.world.players, this.world.arena.W, this.world.arena.H, 1, true);
+    this.net?.onRound(this);
     if (!this.demo) {
       this.updateHud();
       this.showBanner(`${t('round')} ${this.round}`, this.world.arena.def.name[settings.lang] || '', 'big');
@@ -118,6 +120,7 @@ export class Match {
   }
 
   showBanner(title, sub = '', cls = '') {
+    this.net?.send({ t: 'banner', title, sub, cls });
     const b = this.el.banner;
     b.className = 'show ' + cls;
     b.innerHTML = `<div class="t"></div><div class="s"></div>`;
@@ -134,7 +137,7 @@ export class Match {
     for (const p of W.players) {
       if (p.isBot) continue;
       const it = this.input.getIntent(p.cfg.device);
-      if (it.pause && !this.demo) { this.pause(); return; }
+      if (it.pause && !this.demo) { if (this.net) { this.toggleOverlay(); continue; } this.pause(); return; }
       if (it.aimNdc && it.hasAim) {
         const g = this.view.screenToGround(it.aimNdc);
         if (g) { it.ax = g.x - p.x; it.az = g.z - p.z; }
@@ -172,6 +175,7 @@ export class Match {
     const focus = W.players.filter(p => p.alive);
     for (const b of W.booms) if (b.flying && b.hitter && b.hitter.alive) focus.push(b);
     this.view.frame(focus, W.arena.W, W.arena.H, dt);
+    this.net?.tick(this, dt);
     if (!this.demo) {
       this.updateLabels();
       const left = Math.max(0, CFG.ROUND_TIME - this.roundTime);
@@ -183,6 +187,7 @@ export class Match {
   handleEvents() {
     const W = this.world, fx = this.fx, demo = this.demo;
     const play = (n, v) => { if (!demo) sfx(n, v); };
+    this.net?.onEvents(this, W.events);
     for (const e of W.events) {
       switch (e.type) {
         case 'throw': play('throw', 0.7 + e.charge * 0.5); break;
@@ -250,6 +255,7 @@ export class Match {
     } else {
       const key = this.scoreKey(A[0]);
       this.wins.set(key, (this.wins.get(key) || 0) + 1);
+      this.net?.sendWins(this);
       for (const p of A) p.victory = true;
       if (this.teams) title = `${t(A[0].team % 2 ? 'teamBlue' : 'teamRed')} ${t('teamWins')}`;
       else title = `${A[0].name} ${t('wins')}`;
@@ -263,6 +269,7 @@ export class Match {
   }
 
   endMatch(key) {
+    this.net?.send({ t: 'end', key });
     this.state = 'matchEnd';
     const W = this.world;
     for (const p of W.players) if (this.scoreKey(p) === key && p.alive) p.victory = true;
@@ -289,19 +296,29 @@ export class Match {
   }
 
   rematch() {
+    this.net?.send({ t: 'rematch' });
     this.el.end.classList.remove('show');
     this.wins.clear(); this.round = 0;
     this.buildHud();
     this.startRound();
   }
 
+  // online la partita non si ferma: il menu si apre sopra il gioco
+  toggleOverlay() {
+    this.overlayPaused = !this.overlayPaused;
+    this.el.pause.classList.toggle('show', this.overlayPaused);
+    if (this.overlayPaused) this.el.pause.querySelector('button')?.focus();
+  }
+
   pause() {
+    if (this.net) { if (!this.overlayPaused) this.toggleOverlay(); return; }
     this.prevState = this.state; this.state = 'paused';
     this.el.pause.classList.add('show');
     this.el.pause.querySelector('button').focus();
   }
 
   resume() {
+    if (this.net) { if (this.overlayPaused) this.toggleOverlay(); return; }
     if (this.state !== 'paused') return;
     this.state = this.prevState; this.el.pause.classList.remove('show');
     this.acc = 0;
@@ -309,6 +326,11 @@ export class Match {
 
   handlePauseInput() {
     for (const p of this.world.players) if (!p.isBot && this.input.getIntent(p.cfg.device).pause) { this.resume(); return; }
+  }
+
+  playerLeft(id) {
+    const p = this.world?.players.find(q => q.id === id);
+    if (p && p.alive) this.world.kill(p, null, 'void');
   }
 
   dispose() {
