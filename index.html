@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ff7a59">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Boomerang Battle Arena</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M10 60 Q50 0 90 60 L75 70 Q50 30 25 70Z' fill='%23ffb02e' stroke='%23402' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.min.js", "three/addons/": "./vendor/addons/" } }
+  </script>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="vignette"></div>
+
+  <div id="hud"></div>
+  <div id="timer"></div>
+  <div id="labels"></div>
+  <div id="banner"></div>
+
+  <div id="ui">
+    <!-- MENU PRINCIPALE -->
+    <section id="scr-menu" class="screen active">
+      <div class="logo">
+        <div class="logo-boom"></div>
+        <h1>Boomerang<br><span>Battle Arena</span></h1>
+        <p data-i18n="subtitle"></p>
+      </div>
+      <nav class="menu-buttons">
+        <button class="btn big primary" data-go="setup" data-i18n="play"></button>
+        <button class="btn" data-go="chars" data-i18n="characters"></button>
+        <button class="btn" data-go="howto" data-i18n="howto"></button>
+        <button class="btn" data-go="settings" data-i18n="settings"></button>
+        <button class="btn" data-go="credits" data-i18n="credits"></button>
+      </nav>
+      <div class="pads-info" id="pads-info"></div>
+      <div class="version">v0.2 · fase 1–5</div>
+    </section>
+
+    <!-- PREPARAZIONE PARTITA -->
+    <section id="scr-setup" class="screen">
+      <div class="panel wide">
+        <h2 data-i18n="setupTitle"></h2>
+        <div class="slots" id="slots"></div>
+        <div class="row-actions">
+          <button class="btn small" id="add-bot" data-i18n="addBot"></button>
+          <span class="hint" data-i18n="joinHint"></span>
+        </div>
+        <div class="opts">
+          <label><span data-i18n="mode"></span>
+            <select id="opt-mode"><option value="classic" data-i18n="modeClassic"></option><option value="teams" data-i18n="modeTeams"></option></select></label>
+          <label><span data-i18n="botLevel"></span>
+            <select id="opt-bot"><option value="facile" data-i18n="facile" selected></option><option value="normale" data-i18n="normale"></option><option value="difficile" data-i18n="difficile"></option><option value="esperto" data-i18n="esperto"></option></select></label>
+          <label><span data-i18n="roundsToWin"></span>
+            <select id="opt-rounds"><option>3</option><option selected>5</option><option>7</option><option>10</option></select></label>
+          <label><span data-i18n="arena"></span><select id="opt-arena"></select></label>
+        </div>
+        <div class="row-actions end">
+          <button class="btn" data-go="menu" data-i18n="back"></button>
+          <button class="btn primary big" id="start-match" data-i18n="start"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PERSONAGGI -->
+    <section id="scr-chars" class="screen">
+      <div class="panel wide">
+        <h2 data-i18n="characters"></h2>
+        <div class="char-grid" id="char-grid"></div>
+        <div class="row-actions end"><button class="btn" data-go="menu" data-i18n="back"></button></div>
+      </div>
+    </section>
+
+    <!-- COME SI GIOCA -->
+    <section id="scr-howto" class="screen">
+      <div class="panel text"><h2 data-i18n="howto"></h2><div data-i18n-html="howtoText"></div>
+        <div class="row-actions end"><button class="btn" data-go="menu" data-i18n="back"></button></div></div>
+    </section>
+
+    <!-- IMPOSTAZIONI -->
+    <section id="scr-settings" class="screen">
+      <div class="panel">
+        <h2 data-i18n="settings"></h2>
+        <div class="opts col">
+          <label><span data-i18n="language"></span><select id="set-lang"><option value="it">Italiano</option><option value="en">English</option></select></label>
+          <label><span data-i18n="quality"></span><select id="set-quality"><option value="bassa" data-i18n="bassa"></option><option value="media" data-i18n="media"></option><option value="alta" data-i18n="alta"></option></select></label>
+          <label><span data-i18n="musicVol"></span><input type="range" id="set-music" min="0" max="1" step="0.05"></label>
+          <label><span data-i18n="sfxVol"></span><input type="range" id="set-sfx" min="0" max="1" step="0.05"></label>
+          <label class="check"><input type="checkbox" id="set-aim"><span data-i18n="showAim"></span></label>
+          <label class="check"><input type="checkbox" id="set-shake"><span data-i18n="screenShake"></span></label>
+        </div>
+        <h3 data-i18n="keysTitle"></h3>
+        <div class="keys" id="keys"></div>
+        <div class="row-actions end">
+          <button class="btn small" id="reset-keys" data-i18n="resetKeys"></button>
+          <button class="btn" data-go="menu" data-i18n="back"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CREDITI -->
+    <section id="scr-credits" class="screen">
+      <div class="panel text"><h2 data-i18n="credits"></h2><div data-i18n-html="creditsText"></div>
+        <div class="row-actions end"><button class="btn" data-go="menu" data-i18n="back"></button></div></div>
+    </section>
+  </div>
+
+  <!-- PAUSA -->
+  <div id="pause" class="overlay">
+    <div class="panel small-panel">
+      <h2 data-i18n="paused"></h2>
+      <button class="btn primary" id="btn-resume" data-i18n="resume"></button>
+      <button class="btn" id="btn-quit" data-i18n="quit"></button>
+    </div>
+  </div>
+
+  <!-- FINE PARTITA -->
+  <div id="matchend" class="overlay">
+    <div class="panel small-panel">
+      <div class="champ"></div>
+      <ol class="rank"></ol>
+      <button class="btn primary" id="btn-rematch" data-i18n="rematch"></button>
+      <button class="btn" id="btn-menu" data-i18n="toMenu"></button>
+    </div>
+  </div>
+
+  <!-- COMANDI TOUCH -->
+  <div id="touch-layer">
+    <div class="stick" id="stick-left"><div class="knob"></div></div>
+    <div class="stick aim" id="stick-right"><div class="knob"></div></div>
+    <div class="tbtn" id="tbtn-dash">⚡</div>
+    <div class="tbtn" id="tbtn-melee">✋</div>
+    <div class="tbtn" id="tbtn-pause">II</div>
+  </div>
+
+  <div id="rotate" data-i18n="rotateHint"></div>
+  <div id="fatal"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
