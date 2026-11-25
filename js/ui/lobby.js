@@ -1,6 +1,7 @@
 // Schermate "Gioca online" e stanza: crea/entra, lobby con presenze, avvio automatico quando tutti sono pronti.
 
 import { OnlineSession } from '../net/online.js';
+import { Voice } from '../net/voice.js';
 import { NetHost, ClientMatch } from '../net/netgame.js';
 import { netConfigured } from '../net/net-config.js';
 import { Match } from '../game/match.js';
@@ -15,6 +16,8 @@ const COLORS = ['#ff4d6d', '#4dabff', '#5bd96b', '#ffc93c', '#b57cff', '#ff8a3d'
 
 export function setupOnline(ctx) {
   const S = new OnlineSession();
+  const voice = new Voice(S);
+  window.__voice = voice;
   let netHost = null, clientMatch = null, inGame = false, lastCfg = null;
   let hostMissingSince = 0, startLock = false;
   const roomOpts = ['#ro-mode', '#ro-rounds', '#ro-bots', '#ro-level', '#ro-arena'];
@@ -68,6 +71,7 @@ export function setupOnline(ctx) {
     if (S.isHost) pushCfg();
     ctx.show('room');
     renderRoom();
+    updateVoiceUI();
   }
 
   $('#btn-copy').onclick = async () => {
@@ -95,7 +99,8 @@ export function setupOnline(ctx) {
     const teams = cfg.mode === 'teams';
     list.forEach((m, i) => {
       const me = m.uid === S.uid, c = CHARACTERS[m.char] || CHARACTERS[0];
-      const d = document.createElement('div'); d.className = 'slot' + (me ? ' me' : '');
+      const d = document.createElement('div'); d.className = 'slot' + (me ? ' me' : '') + (voice.speaking.has(m.uid) ? ' speak' : '');
+      d.dataset.uid = m.uid;
       d.style.setProperty('--c', teams ? (i % 2 ? '#4dabff' : '#ff4d6d') : COLORS[i % 8]);
       d.innerHTML = `<span class="who"></span><div class="hint dev"></div>
         ${S.isHost && !me ? '<button class="btn x" title="' + t('remove') + '">✕</button>' : ''}
@@ -224,6 +229,7 @@ export function setupOnline(ctx) {
   }
 
   async function leaveRoom(reason = '') {
+    voice.close();
     if (inGame) { inGame = false; clientMatch = null; netHost = null; ctx.leaveGame('online'); }
     await S.leave();
     ctx.show('online');
@@ -242,7 +248,81 @@ export function setupOnline(ctx) {
   const q = new URLSearchParams(location.search).get('stanza');
   if (q) { $('#join-code').value = q.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8); }
 
+  // ---------- RADIO ----------
+  const vbar = $('#voicebar');
+  function updateVoiceUI() {
+    vbar.classList.toggle('show', !!S.room);
+    if (!S.room) return;
+    const mic = $('#vb-mic');
+    mic.classList.toggle('off', !voice.micOn);
+    mic.classList.toggle('live', voice.transmitting);
+    $('#vb-spk').classList.toggle('off', !voice.prefs.speakers);
+    const st = voice.status();
+    $('#vb-dot').className = 'vb-dot ' + st;
+    let txt = voice.error === 'denied' ? t('voiceDenied') : voice.error === 'nomic' ? t('voiceNoMic')
+      : !voice.micOn ? t('micOff') : voice.prefs.ptt && !voice.pttDown ? t('pttWait') : t('micOnTxt');
+    if (!voice.prefs.speakers) txt += ' · ' + t('speakersOff');
+    if (st === 'alone') txt = t('voiceAlone'); else if (st === 'partial') txt += ' · ' + t('voicePartial'); else if (st === 'connecting') txt += ' · ' + t('voiceConnecting');
+    $('#vb-txt').textContent = txt;
+    // chi parla: schede della stanza, etichette in partita, pannello radio
+    document.querySelectorAll('#room-members .slot').forEach(el => el.classList.toggle('speak', voice.speaking.has(el.dataset.uid)));
+    const m = ctx.getMatch();
+    if (m?.labelEls) for (const [id, el] of m.labelEls) el.classList.toggle('speak', id.startsWith('u_') && voice.speaking.has(id.slice(2)));
+    document.querySelectorAll('#vp-people .vp-person').forEach(el => el.classList.toggle('speak', voice.speaking.has(el.dataset.uid)));
+  }
+  voice.onChange(updateVoiceUI);
+  S.on('members', updateVoiceUI);
+
+  $('#vb-mic').onclick = () => { ctx.unlockAudio(); voice.setMic(!voice.micOn); };
+  $('#vb-spk').onclick = () => voice.setSpeakers(!voice.prefs.speakers);
+  $('#vb-set').onclick = () => openVoicePanel();
+  $('#vp-close').onclick = () => $('#voicepanel').classList.remove('show');
+  $('#vp-ptt').onchange = e => voice.setPTT(e.target.checked);
+  $('#vp-mic').onchange = e => voice.changeMic(e.target.value);
+
+  async function openVoicePanel() {
+    $('#vp-ptt').checked = voice.prefs.ptt;
+    const mics = await voice.listMics();
+    const sel = $('#vp-mic');
+    sel.innerHTML = `<option value="">${t('defaultMic')}</option>` + mics.map((d, i) => `<option value="${d.deviceId.replace(/"/g, '')}">${(d.label || 'Microfono ' + (i + 1)).replace(/[<>&"]/g, '')}</option>`).join('');
+    sel.value = voice.prefs.micId || '';
+    const box = $('#vp-people'); box.innerHTML = '';
+    for (const [uid, m] of Object.entries(S.members)) {
+      if (uid === S.uid) continue;
+      const row = document.createElement('div'); row.className = 'vp-person'; row.dataset.uid = uid;
+      row.innerHTML = `<b></b><input type="range" min="0" max="1" step="0.05"><button class="btn small"></button>`;
+      row.querySelector('b').textContent = String(m.nick || '?').slice(0, 16);
+      const r = row.querySelector('input'); r.value = voice.prefs.vol[uid] ?? 1;
+      r.oninput = () => voice.setVolume(uid, +r.value);
+      const b = row.querySelector('button');
+      const upd = () => { b.textContent = voice.prefs.muted[uid] ? '🔇' : '🔈'; };
+      b.onclick = () => { voice.setMuted(uid, !voice.prefs.muted[uid]); upd(); }; upd();
+      box.appendChild(row);
+    }
+    $('#voicepanel').classList.add('show');
+  }
+
+  // tasti: M accende/spegne, V (tenuto) per parlare; tasto Select del controller
+  const typing = () => ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName) && document.activeElement.type !== 'range' && document.activeElement.type !== 'checkbox';
+  addEventListener('keydown', e => {
+    if (!S.room || typing() || e.repeat || ctx.input.keyCapture) return;
+    if (e.code === settings.keys.mic) { ctx.unlockAudio(); voice.setMic(!voice.micOn); }
+    if (e.code === settings.keys.ptt) { if (!voice.micOn && voice.prefs.ptt) voice.setMic(true); voice.setPTTDown(true); }
+  });
+  addEventListener('keyup', e => { if (e.code === settings.keys.ptt) voice.setPTTDown(false); });
+  let padSelPrev = false;
+  setInterval(() => {
+    if (!S.room) return;
+    const down = Object.values(ctx.input.padPrev).some(st => st.select);
+    if (down !== padSelPrev) {   // agisce solo quando cambia lo stato del tasto (non disturba il tasto V)
+      if (voice.prefs.ptt) { if (down && !voice.micOn) voice.setMic(true); voice.setPTTDown(down); }
+      else if (down) voice.setMic(!voice.micOn);
+    }
+    padSelPrev = down;
+  }, 50);
+
   return {
+    voice,
     get active() { return !!S.room; },
     get inGame() { return inGame; },
     get isHost() { return S.isHost; },

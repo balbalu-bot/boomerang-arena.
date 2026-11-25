@@ -174,6 +174,26 @@
     </div>
   </div>
 
+  <!-- RADIO (chat vocale della stanza) -->
+  <div id="voicebar">
+    <button class="vb" id="vb-mic" title="Microfono (M)">🎤</button>
+    <button class="vb" id="vb-spk" title="Audio degli altri">🔊</button>
+    <button class="vb small" id="vb-set" title="Radio">⚙</button>
+    <span class="vb-dot" id="vb-dot"></span>
+    <span class="vb-txt" id="vb-txt"></span>
+  </div>
+  <div id="voicepanel" class="overlay">
+    <div class="panel small-panel vp">
+      <h2 data-i18n="radio"></h2>
+      <label class="vp-row"><span data-i18n="microphone"></span><select id="vp-mic"></select></label>
+      <label class="vp-row check"><input type="checkbox" id="vp-ptt"><span data-i18n="pushToTalk"></span></label>
+      <p class="hint" data-i18n="pttHint"></p>
+      <div id="vp-people"></div>
+      <p class="hint" data-i18n="voiceNote"></p>
+      <button class="btn primary" id="vp-close" data-i18n="close"></button>
+    </div>
+  </div>
+
   <!-- COMANDI TOUCH -->
   <div id="touch-layer">
     <div class="stick" id="stick-left"><div class="knob"></div></div>

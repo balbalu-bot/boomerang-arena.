@@ -6,6 +6,7 @@ export const DEFAULT_KEYS = {
   up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD',
   dash: 'Space', melee: 'KeyF', interact: 'KeyE', special: 'KeyQ',
   throwKey: 'KeyJ', pause: 'Escape',
+  mic: 'KeyM', ptt: 'KeyV',
 };
 
 const DEFAULTS = {

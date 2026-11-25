@@ -154,3 +154,28 @@ input[type=text] { font-family: var(--font); font-size: 18px; padding: 8px 12px;
 .slot .net { font-size: 11px; opacity: 0.7; }
 .status { margin-top: 10px; font-weight: bold; font-size: 16px; min-height: 24px; }
 #btn-ready.on { background: var(--green); }
+
+/* ---------- RADIO ---------- */
+#voicebar { position: fixed; left: 10px; bottom: 10px; z-index: 8; display: none; align-items: center; gap: 6px; background: rgba(255,248,236,0.92); border: 3px solid var(--ink); border-radius: 16px; padding: 4px 8px 4px 4px; box-shadow: 0 3px 0 var(--ink); }
+#voicebar.show { display: flex; }
+.vb { width: 44px; height: 44px; border-radius: 12px; border: 3px solid var(--ink); background: #fff; font-size: 20px; cursor: pointer; position: relative; padding: 0; }
+.vb.small { width: 34px; height: 34px; font-size: 16px; }
+.vb.off { background: #ddd; filter: grayscale(1); }
+.vb.off::after { content: ''; position: absolute; left: 6px; right: 6px; top: 50%; height: 4px; background: var(--pink); transform: rotate(-35deg); border-radius: 2px; }
+.vb.live { background: var(--green); box-shadow: 0 0 0 4px rgba(91,217,107,0.45); }
+.vb-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); background: #bbb; }
+.vb-dot.ok { background: var(--green); } .vb-dot.connecting { background: var(--yellow); } .vb-dot.partial { background: var(--orange); }
+.vb-txt { font-size: 12px; font-weight: bold; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.ingame #voicebar { transform: scale(0.8); transform-origin: bottom left; left: 6px; bottom: 6px; }
+body.ingame #voicebar .vb-txt { max-width: 130px; }
+@media (pointer: coarse) { body.ingame #voicebar { bottom: auto; top: 64px; transform-origin: top left; } }
+.vp-row { display: flex; flex-direction: column; gap: 4px; text-align: left; font-weight: bold; font-size: 14px; }
+.vp-row.check { flex-direction: row; align-items: center; gap: 8px; }
+.vp-person { display: flex; align-items: center; gap: 8px; text-align: left; padding: 4px 0; border-bottom: 2px dashed #e6dcc8; }
+.vp-person b { flex: 1; font-size: 14px; }
+.vp-person input[type=range] { width: 110px; }
+.vp-person button { width: 36px; height: 32px; padding: 0; font-size: 15px; border-radius: 10px; border-width: 3px; box-shadow: none; }
+.vp-person.speak b::before, .slot.speak .who::after { content: ' 🔊'; }
+.slot.speak { box-shadow: 0 0 0 4px var(--green), 0 4px 0 var(--c, var(--ink)); }
+.plabel.speak { box-shadow: 0 0 0 3px var(--green); }
+.plabel.speak::after { content: ' 🔊'; }

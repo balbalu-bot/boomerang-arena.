@@ -4,7 +4,7 @@ Party game 3D a visuale isometrica: lancia il boomerang, richiamalo, devia i col
 
 Funziona direttamente nel browser (Chrome, Edge, Firefox, Safari) su Windows, macOS, tablet e smartphone. Nessuna installazione, nessuna pubblicità, nessun dato raccolto.
 
-> **Versione 0.3 — gioco online con stanze private.** Si gioca online (fino a 8 tra persone e bot) oppure sullo stesso dispositivo con tastiera, controller e bot. La chat vocale arriva nella fase 7.
+> **Versione 0.4 — gioco online con stanze private e radio (chat vocale).** Si gioca online (fino a 8 tra persone e bot) oppure sullo stesso dispositivo con tastiera, controller e bot. 
 
 ---
 
@@ -68,6 +68,15 @@ Il gioco online usa **Supabase** (gratuito) solo per stanze e collegamento inizi
 2. Premi **Copia link** e mandalo all'altro giocatore (WhatsApp, SMS…). Chi apre il link trova il codice già inserito: scrive il soprannome e preme **Entra nella stanza**.
 3. Ognuno sceglie il personaggio con ◀ ▶ e preme **Pronto!**. **Quando tutti sono pronti la partita parte da sola.** L'host può aggiungere bot e scegliere modalità, round e arena; con **Avvia ora** parte subito.
 4. A fine partita l'host sceglie **Rivincita** o **Torna alla stanza**.
+
+### Radio (chat vocale)
+- Nella stanza e durante la partita, in basso a sinistra c'è la barra della radio: **🎤** microfono, **🔊** audio degli altri, **⚙** impostazioni.
+- Il microfono parte **spento**. Si accende con 🎤 o il tasto **M** (la prima volta il browser chiede il permesso) e resta acceso finché non lo spegni o esci dalla stanza.
+- **Premi per parlare** (in ⚙): si trasmette solo tenendo premuto **V** o il tasto **Select/View/Share/−** del controller.
+- In ⚙ si sceglie il microfono e si regola o si silenzia il volume di ogni giocatore. Chi parla ha il simbolo 🔊 accanto al nome.
+- La musica si abbassa da sola quando qualcuno parla. Eco, rumore e volume del microfono sono corretti automaticamente dal browser.
+- La radio non passa da nessun server di gioco e non viene registrata. Resta collegata passando dalla stanza alla partita e tra i round.
+- Su iPhone/iPad serve Safari aggiornato; se non senti gli altri, tocca una volta lo schermo.
 
 **Da sapere**
 - La partita gira sul dispositivo di chi crea la stanza (l'host): conviene che la crei chi ha il computer più potente e la connessione migliore, e che **non chiuda o rimpicciolisca la scheda** durante la partita. Se l'host esce, la stanza si chiude per tutti.

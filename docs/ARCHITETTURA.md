@@ -24,7 +24,7 @@
 | 4 | Personaggi e animazioni | ✅ 24 personaggi. Da fare: accessori e colori personalizzabili, abilità individuali (modalità alternativa) |
 | 5 | Intelligenza artificiale | ✅ 4 livelli. Da migliorare: collaborazione di squadra |
 | 6 | Multiplayer online | ✅ v0.3: stanze private, lobby con presenze, avvio quando tutti sono pronti, host autorevole su WebRTC, relè di riserva, spettatori. Da fare: migrazione dell'host, predizione locale |
-| 7 | Chat vocale permanente | |
+| 7 | Chat vocale permanente | ✅ v0.4: WebRTC audio a maglia (una connessione per coppia), microfono spento all'avvio, premi-per-parlare, volumi e silenziamento per giocatore, indicatore di chi parla, abbassamento musica, riconnessione. Oltre 5-6 persone conviene una SFU |
 | 8 | Sicurezza e stanze private | ✅ parziale: RLS, canali privati, codici casuali a scadenza, blocco stanza, espulsione. Da fare: approvazione manuale dei nuovi ingressi, chat testuale |
 | 9 | Armi aggiuntive e potenziamenti combinabili | |
 | 10 | Altre modalità | |

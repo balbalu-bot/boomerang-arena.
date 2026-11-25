@@ -224,6 +224,7 @@ export class OnlineSession {
   }
 
   signal(to, d) { this.chan?.send({ f: this.uid, to, k: 'sig', d }); }
+  vsignal(to, d) { this.chan?.send({ f: this.uid, to, k: 'vsig', d }); }
   relaySend(to, msg) { this.chan?.send({ f: this.uid, to, k: 'msg', d: msg }); }
   broadcastRelay(msg) { this.chan?.send({ f: this.uid, to: '*', k: 'msg', d: msg }); }
 
@@ -234,7 +235,8 @@ export class OnlineSession {
       let peer = this.peers.get(p.f);
       if (!peer && !this.isHost && p.f === this.hostId) { peer = new Peer(this, p.f, false); this.peers.set(p.f, peer); }
       peer?.onSignal(p.d || {});
-    } else if (p.k === 'msg') this.onData(p.f, p.d);
+    } else if (p.k === 'vsig') this.emit('vsig', p.f, p.d);
+    else if (p.k === 'msg') this.onData(p.f, p.d);
   }
 
   onData(from, msg) {
