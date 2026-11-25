@@ -139,6 +139,9 @@
           <label class="check"><input type="checkbox" id="set-aim"><span data-i18n="showAim"></span></label>
           <label class="check"><input type="checkbox" id="set-shake"><span data-i18n="screenShake"></span></label>
         </div>
+        <h3 data-i18n="padTitle"></h3>
+        <p class="hint" data-i18n="padHint"></p>
+        <button class="btn" id="pad-config" data-i18n="padConfig"></button>
         <h3 data-i18n="keysTitle"></h3>
         <div class="keys" id="keys"></div>
         <div class="row-actions end">
@@ -161,6 +164,19 @@
       <h2 data-i18n="paused"></h2>
       <button class="btn primary" id="btn-resume" data-i18n="resume"></button>
       <button class="btn" id="btn-quit" data-i18n="quit"></button>
+    </div>
+  </div>
+
+  <!-- CONFIGURAZIONE CONTROLLER -->
+  <div id="padwizard" class="overlay">
+    <div class="panel small-panel">
+      <h2 data-i18n="padConfig"></h2>
+      <div class="hint" id="pw-name"></div>
+      <div class="pw-text" id="pw-text"></div>
+      <div class="hint" id="pw-sub"></div>
+      <button class="btn small" id="pw-skip" data-i18n="pwSkip"></button>
+      <button class="btn small" id="pw-reset" data-i18n="pwReset"></button>
+      <button class="btn" id="pw-close" data-i18n="close"></button>
     </div>
   </div>
 

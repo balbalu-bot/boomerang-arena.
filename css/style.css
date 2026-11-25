@@ -179,3 +179,6 @@ body.ingame #voicebar .vb-txt { max-width: 130px; }
 .slot.speak { box-shadow: 0 0 0 4px var(--green), 0 4px 0 var(--c, var(--ink)); }
 .plabel.speak { box-shadow: 0 0 0 3px var(--green); }
 .plabel.speak::after { content: ' 🔊'; }
+
+.pw-text { font-size: 24px; font-weight: bold; color: var(--orange); text-shadow: 0 2px 0 var(--ink); min-height: 60px; display: flex; align-items: center; justify-content: center; }
+#padwizard { z-index: 12; }

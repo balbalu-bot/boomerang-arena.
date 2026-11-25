@@ -133,7 +133,21 @@ export class InputManager {
     // Per i controller generici Bluetooth la levetta destra è spesso sugli assi 2/3 o 3/4.
     let rx = ax(2), ry = ax(3);
     if (p.mapping !== 'standard' && p.axes.length >= 6 && Math.abs(ax(3)) + Math.abs(ax(4)) > Math.abs(rx) + Math.abs(ry)) { rx = ax(3); ry = ax(4); }
+    // controller configurato a mano in Impostazioni → Configura controller
+    const map = settings.padMaps?.[p.id];
+    if (map) {
+      if (map.rx !== undefined) { rx = ax(map.rx); ry = ax(map.ry ?? map.rx + 1); }
+      const hb = i => i !== undefined && b(i);
+      return {
+        lx: dz(ax(0)), ly: dz(ax(1)), rx: dz(rx), ry: dz(ry),
+        south: hb(map.throw), east: hb(map.dash), west: hb(map.melee), north: false,
+        lb: false, rb: false, lt: false, rt: false, select: hb(map.ptt), start: hb(map.start),
+        up: b(12), down: b(13), left: b(14), right: b(15),
+        anyBtn: p.buttons.some((x, i) => i < 32 && (x.pressed || x.value > 0.45)),
+      };
+    }
     return {
+      anyBtn: p.buttons.some((x, i) => i < 32 && (x.pressed || x.value > 0.45)),
       lx: dz(ax(0)), ly: dz(ax(1)), rx: dz(rx), ry: dz(ry),
       south: b(0), east: b(1), west: b(2), north: b(3),
       lb: b(4), rb: b(5), lt: b(6), rt: b(7), select: b(8), start: b(9),
@@ -166,6 +180,7 @@ export class InputManager {
       if (!dir) { rep.dir = null; rep.n = 0; }
       this.padMenuRepeat[id] = rep;
       if (s._edge.south) this.menuQueue.push({ type: 'confirm', device: id });
+      else if (s._edge.anyBtn) this.menuQueue.push({ type: 'any', device: id });
       if (s._edge.east) this.menuQueue.push({ type: 'back', device: id });
       if (s._edge.start) this.menuQueue.push({ type: 'start', device: id });
       if (Object.values(s._edge).some(Boolean) || Math.abs(s.lx) + Math.abs(s.ly) > 0.5) this.lastDevice = id;

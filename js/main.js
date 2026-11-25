@@ -253,6 +253,55 @@ $('#set-aim').onchange = e => { settings.showAim = e.target.checked; saveSetting
 $('#set-shake').onchange = e => { settings.screenShake = e.target.checked; saveSettings(); };
 $('#reset-keys').onclick = () => { resetKeys(); renderSettings(); };
 
+// ---------------- CONFIGURA CONTROLLER ----------------
+// Per i joystick che il browser non riconosce come "standard": si preme il tasto richiesto e il gioco lo ricorda.
+const WIZ_STEPS = ['throw', 'melee', 'dash', 'start', 'rx'];
+let wiz = null;
+$('#pad-config').onclick = () => {
+  const pads = input.pads();
+  wiz = { step: -1, pad: pads[0] || null, map: {}, prev: null, timer: null };
+  $('#padwizard').classList.add('show');
+  wizNext();
+  wiz.timer = setInterval(wizPoll, 40);
+};
+function wizText(txt, sub = '') { $('#pw-text').textContent = txt; $('#pw-sub').textContent = sub; }
+function wizNext() {
+  wiz.step++;
+  if (!wiz.pad) { wizText(t('pwNoPad'), t('pwPressAny')); return; }
+  $('#pw-name').textContent = wiz.pad.id.slice(0, 60);
+  if (wiz.step >= WIZ_STEPS.length) {
+    settings.padMaps = { ...(settings.padMaps || {}), [wiz.pad.id]: wiz.map };
+    saveSettings(); sfx('join');
+    wizText(t('pwDone')); clearInterval(wiz.timer);
+    setTimeout(() => $('#padwizard').classList.remove('show'), 1600);
+    return;
+  }
+  const k = WIZ_STEPS[wiz.step];
+  wizText(t('pw_' + k), k === 'rx' ? t('pwSkipHint') : '');
+  wiz.prev = null; wiz.wait = performance.now() + 350;
+}
+function wizPoll() {
+  if (!wiz) return;
+  const pads = input.pads();
+  if (!wiz.pad) { const p = pads.find(g => g.buttons.some(b => b.pressed)); if (p) { wiz.pad = p; wiz.step = -1; wizNext(); } return; }
+  const g = pads.find(x => x.index === wiz.pad.index); if (!g) return;
+  const pressed = g.buttons.map(b => b.pressed || b.value > 0.5);
+  if (!wiz.prev) { wiz.prev = pressed; wiz.axes0 = [...g.axes]; return; }
+  if (performance.now() < wiz.wait) { wiz.prev = pressed; return; }
+  const k = WIZ_STEPS[wiz.step];
+  if (k === 'rx') {
+    for (let i = 2; i < g.axes.length; i++) if (g.axes[i] > 0.7 && Math.abs(wiz.axes0[i] ?? 0) < 0.3) { wiz.map.rx = i; wiz.map.ry = i + 1 < g.axes.length ? i + 1 : i; sfx('ui'); wizNext(); return; }
+  } else {
+    const i = pressed.findIndex((v, j) => v && !wiz.prev[j]);
+    if (i >= 0) { wiz.map[k] = i; sfx('ui'); wiz.prev = pressed; wizNext(); return; }
+  }
+  wiz.prev = pressed;
+}
+$('#pw-skip').onclick = () => { if (wiz) wizNext(); };
+$('#pw-reset').onclick = () => { if (wiz?.pad) { const m = { ...(settings.padMaps || {}) }; delete m[wiz.pad.id]; settings.padMaps = m; saveSettings(); } closeWiz(); };
+$('#pw-close').onclick = closeWiz;
+function closeWiz() { if (wiz) clearInterval(wiz.timer); wiz = null; $('#padwizard').classList.remove('show'); }
+
 // ---------------- CONTROLLER ----------------
 function updatePadsInfo() {
   const n = input.pads().length;
@@ -273,7 +322,7 @@ function handleMenuEvents() {
     const joined = slots.find(s => s.device === e.device);
     const focus = document.activeElement;
     if (screen === 'setup') {
-      if (e.type === 'confirm' && !joined) { padJoin(e.device); continue; }
+      if ((e.type === 'confirm' || e.type === 'any') && !joined) { padJoin(e.device); continue; }
       if (e.type === 'back' && joined) { slots = slots.filter(s => s !== joined); renderSlots(); continue; }
       if (e.type === 'start') { startMatch(); return; }
       if ((e.type === 'left' || e.type === 'right') && joined && !(focus && (focus.tagName === 'SELECT' || focus.type === 'range'))) {
@@ -290,6 +339,7 @@ function handleMenuEvents() {
       if (screen === 'menu') show('setup');
       continue; // in pausa il tasto Start viene gestito dalla partita stessa
     }
+    if (e.type === 'any') continue;
     if (e.type === 'confirm') { sfx('ui'); Nav.confirm(); continue; }
     if (['up', 'down', 'left', 'right'].includes(e.type)) Nav.navigate(e.type);
   }

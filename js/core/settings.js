@@ -18,6 +18,7 @@ const DEFAULTS = {
   showAim: true,
   screenShake: true,
   keys: { ...DEFAULT_KEYS },
+  padMaps: {},            // tasti personalizzati per controller non standard (per nome del controller)
 };
 
 function load() {

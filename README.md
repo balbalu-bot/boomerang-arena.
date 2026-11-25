@@ -103,7 +103,7 @@ Nella schermata **Gioca**, ogni giocatore con un controller preme **A / ✕** pe
 | Switch Pro Controller | Bluetooth o USB | Funziona meglio in Chrome/Edge. I tasti seguono la posizione fisica (il tasto in basso lancia) |
 | Bluetooth generici | Bluetooth | Se il browser li riconosce come "standard" funzionano come un controller Xbox |
 
-Il browser vede un controller solo dopo che hai **premuto un suo tasto** con la pagina aperta. Su iPhone/iPad servono iOS 13 o successivo e Safari.
+Il browser vede un controller solo dopo che hai **premuto un suo tasto** con la pagina aperta. Per entrare in partita basta premere **un tasto qualsiasi**. Se i tasti non fanno la cosa giusta (capita con joystick generici, soprattutto su Mac): **Impostazioni → Configura controller** e premi i tasti richiesti; il gioco li ricorda. Su iPhone/iPad servono iOS 13 o successivo e Safari.
 
 ---
 
